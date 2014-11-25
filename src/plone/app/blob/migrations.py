@@ -82,6 +82,13 @@ def makeMigrator(context, portal_type, meta_type=None, remove_old_value=False):
                     is_imagefield = True
                     oldfield.removeScales(self.obj)
                 value = oldfield.get(self.obj)
+
+                if not value:
+                    # no image/file data: don't copy it over to blob field
+                    # this way it's save to run migration multiple times w/o
+                    # overwriting existing data
+                    continue
+
                 # access new field via schemaextender
                 field = self.obj.getField(name)
                 field.getMutator(self.obj)(value)
