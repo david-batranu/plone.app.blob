@@ -9,11 +9,14 @@ except ImportError:
     BaseMigrator = object
     InlineMigrator = object
     haveContentMigrations = False
-
-from transaction import savepoint
-from Products.CMFCore.utils import getToolByName
+    
+from Acquisition import aq_base
 from Products.Archetypes.interfaces import ISchema
+from Products.CMFCore.utils import getToolByName
+from plone.app.blob.field import BlobWrapper
 from plone.app.blob.interfaces import IBlobField
+from transaction import savepoint
+
 
 
 def getMigrationWalker(context, migrator):
@@ -87,6 +90,10 @@ def makeMigrator(context, portal_type, meta_type=None, remove_old_value=False):
                     # no image/file data: don't copy it over to blob field
                     # this way it's save to run migration multiple times w/o
                     # overwriting existing data
+                    continue
+
+                if isinstance(aq_base(value), BlobWrapper):
+                    # already a blob field, no need to migrate it
                     continue
 
                 # access new field via schemaextender
